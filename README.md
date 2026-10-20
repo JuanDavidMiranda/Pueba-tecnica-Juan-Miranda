@@ -1,102 +1,142 @@
-# SIHOS · Censo de pacientes
+SIHOS - Censo de pacientes
 
-Prueba técnica EST-SEM / SIHOS. Incluye las consultas SQL de productos, las respuestas de programación y una aplicación para el censo de pacientes: API REST en PHP, MySQL con PDO, autenticación JWT y una interfaz que crea, lista, busca, edita y elimina sin recargar la página.
+Este proyecto corresponde a la prueba técnica. Consiste en una aplicación para gestionar el censo de pacientes, con funciones para registrar, consultar, buscar, editar y eliminar información desde una interfaz web, sin necesidad de recargar la página.
 
-Antes de entregar, escriba su nombre y cédula al inicio de [docs/respuestas.md](docs/respuestas.md).
+El proyecto cuenta con una API REST desarrollada en PHP, una base de datos MySQL y autenticación mediante JWT. También incluye las consultas SQL y las respuestas de las demás secciones de la prueba.
 
-## Qué cubre
 
-- Migraciones y datos de prueba: 5 departamentos, 2 municipios por departamento, 2 tipos de documento, géneros, el administrador y 5 pacientes.
-- `UserController` con inicio de sesión, sesión actual y cierre. El CRUD del paciente está en `PacienteController` para no mezclar autenticación con el censo.
-- Validación de servidor y de navegador, sentencias preparadas y fotografías opcionales (JPG, PNG o WEBP, máximo 2 MB).
-- Paginación y búsqueda por nombre, documento o correo.
-- Pruebas PHPUnit del token, el validador, la carga de imágenes, el controlador de usuario y el flujo HTTP del paciente.
+FUNCIONALIDADES:
 
-Las respuestas escritas de las secciones 1 y 2 están en [docs/respuestas.md](docs/respuestas.md). El SQL se puede volver a ejecutar con `database/sql/productos.sql`.
+Registro, consulta, edición y eliminación de pacientes.
 
-## Requisitos
+Búsqueda por nombre, número de documento o correo electrónico.
 
-- PHP 8.2 o superior, con `pdo_mysql`, `mbstring` y `fileinfo`
-- Composer
-- MySQL o MariaDB
+Listado de pacientes con paginación.
 
-## Puesta en marcha
+Inicio y cierre de sesión con autenticación JWT.
 
-Cree la base y el usuario (ajuste la contraseña si no usa la de desarrollo):
+Validación de los datos tanto en el navegador como en el servidor.
 
-```sql
-CREATE DATABASE sihos CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'sihos'@'127.0.0.1' IDENTIFIED BY 'sihos_local';
-GRANT ALL PRIVILEGES ON sihos.* TO 'sihos'@'127.0.0.1';
+Carga opcional de fotografías en formato JPG, PNG o WEBP, con un tamaño máximo de 2 MB.
+
+Catálogos de departamentos, municipios, tipos de documento y géneros.
+
+Pruebas automatizadas con PHPUnit para validar diferentes partes de la aplicación.
+
+Consultas SQL de la sección de productos en database/sql/productos.sql.
+
+Las respuestas de las secciones 1 y 2 de la prueba se encuentran en docs/respuestas.md.
+
+
+
+REQUISITOS:
+
+Para ejecutar el proyecto:
+
+PHP 8.2 o superior.
+
+Composer.
+
+MySQL o MariaDB.
+
+Las extensiones de PHP pdo_mysql, mbstring y fileinfo.
+
+
+
+INSTALACIÓN Y EJECUCIÓN:
+
+1. Crear la base de datos
+
+Ejecuta las siguientes instrucciones en MySQL. Si ya tienes un usuario para la aplicación, puedes utilizarlo y ajustar la configuración según corresponda.
+
+CREATE DATABASE sihos
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+CREATE USER 'sihos'@'127.0.0.1'
+IDENTIFIED BY 'sihos_local';
+
+GRANT ALL PRIVILEGES ON sihos.*
+TO 'sihos'@'127.0.0.1';
+
 FLUSH PRIVILEGES;
-```
 
-Luego:
+2. Instalar las dependencias
 
-```bash
+Desde la carpeta principal del proyecto, ejecuta:
+
 composer install
+
+3. Configurar el entorno
+
+Copia el archivo de configuración de ejemplo:
+
 cp .env.example .env
+
+Si es necesario, modifica las credenciales de la base de datos en .env para que coincidan con tu configuración local.
+
+4. Preparar la base de datos
+
+Ejecuta el siguiente comando para aplicar las migraciones y cargar los datos iniciales:
+
 php bin/setup.php
+
+5. Iniciar la aplicación
+
 composer serve
-```
 
-Abra http://127.0.0.1:8741
+Abre la siguiente dirección en el navegador:
 
-Si no copia `.env`, la aplicación usa `.env.example`. El documento raíz del servidor debe ser `public/`, que es lo que hace `composer serve`. Así `.env` no queda expuesto.
+http://127.0.0.1:8741
 
-Acceso de la prueba:
 
-- Correo: `admin@sihos.local`
-- Contraseña: `1234567890`
 
-La contraseña se guarda con `password_hash`. No está en texto plano.
 
-Para las pruebas automáticas hace falta otra base, `sihos_test`, con permiso para el mismo usuario. PHPUnit la usa sola y no borra los pacientes de `sihos`.
+USUARIO DE PR¿UEBA:
 
-```bash
+Para ingresar a la aplicación, utiliza las siguientes credenciales:
+
+Correo: admin@sihos.local
+
+Contraseña: 1234567890
+
+
+
+PRUEBAS:
+
+Para ejecutar las pruebas del proyecto, necesitas crear también una base de datos llamada sihos_test y otorgar permisos al usuario configurado.
+
+Luego ejecuta:
+
 composer test
-```
 
-## API
 
-Todas las rutas, excepto el login, piden `Authorization: Bearer <token>`.
 
-| Método | Ruta | Uso |
-| --- | --- | --- |
-| POST | `/api/auth/login` | Devuelve el JWT |
-| GET | `/api/auth/me` | Usuario de la sesión |
-| POST | `/api/auth/logout` | Confirma el cierre; el cliente borra el token |
-| GET | `/api/pacientes?q=&page=&per_page=` | Listado paginado |
-| GET | `/api/pacientes/{id}` | Detalle |
-| POST | `/api/pacientes` | Alta, JSON o formulario con foto |
-| PUT o POST | `/api/pacientes/{id}` | Edición |
-| DELETE | `/api/pacientes/{id}` | Eliminación |
-| GET | `/api/departamentos` | Catálogo |
-| GET | `/api/municipios?departamento_id=` | Municipios del departamento |
-| GET | `/api/tipos-documento` | Catálogo |
-| GET | `/api/generos` | Catálogo |
 
-Un error de validación responde `422` con `message` y `errors`. Un token ausente o vencido responde `401`.
+ESTRUCTURA DEL PROYECTO:
 
-## Estructura
+public/
+  index.php                 Punto de entrada de la aplicación
+  assets/                   Estilos y scripts del navegador
 
-```
-public/index.php              Front controller
-src/Bootstrap.php             Entorno y preparación de la base
-src/Http/Kernel.php           Dependencias y rutas
-src/Http/Middleware           Autenticación JWT
-src/Controller                UserController, PacienteController, CatalogController
-src/Presenter                 Respuesta pública del paciente
-src/Repository                PDO y sentencias preparadas
-src/Validation                Reglas del paciente
-src/Security                  JWT HS256 y fotografías
-database/migrations           Tablas del censo
-database/sql/productos.sql    Sección SQL de la prueba
-views/                        Página y parciales
-public/assets/                Estilos y comportamiento del navegador
-tests/                        PHPUnit
-```
+src/
+  Bootstrap.php             Configuración inicial y base de datos
+  Http/
+    Kernel.php              Registro de rutas y dependencias
+    Middleware/             Validación de autenticación JWT
+  Controller/               Controladores de la API
+  Presenter/                Preparación de respuestas de pacientes
+  Repository/               Consultas a la base de datos con PDO
+  Validation/               Validaciones de pacientes
+  Security/                 JWT y manejo de fotografías
 
-La fotografía, `created_at` y `updated_at` se agregan a `paciente` porque el enunciado pide la foto como dato opcional y conviene saber cuándo cambió el registro. El resto de columnas sigue el enunciado.
+database/
+  migrations/               Estructura de las tablas
+  sql/
+    productos.sql           Consultas SQL de la prueba
 
-`002_municipio_departamento.sql` impide guardar un municipio de otro departamento. `schema_migrations` registra lo ya aplicado, así el DDL no se repite en cada petición. El hash del administrador solo se calcula al crear la cuenta o al reponerla en las pruebas.
+views/                      Vistas y componentes de la interfaz
+tests/                      Pruebas automatizadas con PHPUnit
+
+docs/
+  respuestas.md             Respuestas escritas de la prueba
